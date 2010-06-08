@@ -1,5 +1,7 @@
 # ActsAsAuditedCollection
 
+require 'acts_as_audited_collection/collection_audit.rb'
+
 module ActiveRecord
   module Acts
     module AuditedCollection
