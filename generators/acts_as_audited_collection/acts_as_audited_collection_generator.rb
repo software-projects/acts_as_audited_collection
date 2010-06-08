@@ -1,4 +1,4 @@
-class ActsAsAuditableCollectionGenerator < Rails::Generator::NamedBase
+class ActsAsAuditedCollectionGenerator < Rails::Generator::NamedBase
   def manifest
     record do |m|
       # m.directory "lib"

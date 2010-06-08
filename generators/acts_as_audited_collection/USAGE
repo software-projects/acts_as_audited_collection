@@ -2,7 +2,7 @@ Description:
     Explain the generator
 
 Example:
-    ./script/generate acts_as_auditable_collection Thing
+    ./script/generate acts_as_audited_collection Thing
 
     This will create:
         what/will/it/create

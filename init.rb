@@ -1,3 +1,3 @@
-require 'acts_as_auditable_collection'
+require 'acts_as_audited_collection'
 
-ActiveRecord::Base.send :include, ActiveRecord::Acts::AuditableCollection
+ActiveRecord::Base.send :include, ActiveRecord::Acts::AuditedCollection

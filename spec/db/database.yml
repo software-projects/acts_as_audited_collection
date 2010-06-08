@@ -1,3 +1,3 @@
 sqlite3:
   :adapter: sqlite3
-  :database: vendor/plugins/acts_as_auditable_collection/spec/db/acts_as_auditable_collection.sqlite3.db
+  :database: vendor/plugins/acts_as_audited_collection/spec/db/acts_as_audited_collection.sqlite3.db
