@@ -73,6 +73,16 @@ module ActiveRecord
         def define_acts_as_audited_collection(options)
           yield(read_inheritable_attribute(:audited_collections)[options[:name]] ||= {})
         end
+
+        def without_collection_audit
+          result = nil
+          Thread.current[:collection_audit_enabled] = returning(Thread.current[:collection_audit_enabled]) do
+            Thread.current[:collection_audit_enabled] = false
+            result = yield if block_given?
+          end
+
+          result
+        end
       end
 
       module InstanceMethods
@@ -96,6 +106,8 @@ module ActiveRecord
 
         private
         def collection_audit_write(opts)
+          return if Thread.current[:collection_audit_enabled] == false
+
           mappings = audited_relation_attribute_mappings
           opts[:attributes].reject{|k,v| v.nil?}.each do |name, fk|
             child_collection_audits.create :parent_record_id => fk,
