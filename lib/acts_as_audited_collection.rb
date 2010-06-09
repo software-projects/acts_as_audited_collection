@@ -27,7 +27,9 @@ module ActiveRecord
           end
 
           options = {
-            :name => self.class_name.tableize.to_sym
+            :name => self.class_name.tableize.to_sym,
+            :cascade => false,
+            :track_modifications => false
           }.merge(options)
 
           unless options.has_key? :parent
@@ -98,10 +100,22 @@ module ActiveRecord
             collection_audit_write :action => 'remove', :attributes => old_values
             collection_audit_write :action => 'add', :attributes => new_values
           end
+
+          collection_audit_write_as_modified unless audited_collection_excluded_attribute_changes.empty?
         end
 
         def collection_audit_destroy
           collection_audit_write :action => 'remove', :attributes => audited_collection_attributes
+        end
+
+        def collection_audit_write_as_modified
+          each_modification_tracking_audited_collection do |col|
+            collection_audit_write :action => 'modify', :attributes => attributes.slice(col[:foreign_key])
+          end
+        end
+
+        def collection_audit_cascade(child)
+          collection_audit_write_as_modified if respond_to? :audited_collections
         end
 
         private
@@ -110,16 +124,32 @@ module ActiveRecord
           return if Thread.current[:collection_audit_enabled] == false
 
           mappings = audited_relation_attribute_mappings
-          opts[:attributes].reject{|k,v| v.nil?}.each do |name, fk|
-            child_collection_audits.create :parent_record_id => fk,
-              :parent_record_type => mappings[name][1],
+          opts[:attributes].reject{|k,v| v.nil?}.each do |fk, fk_val|
+            child_collection_audits.create :parent_record_id => fk_val,
+              :parent_record_type => mappings[fk][:parent_type],
               :action => opts[:action],
-              :association => mappings[name][0].to_s
+              :association => mappings[fk][:name].to_s
+
+            if mappings[fk][:cascade]
+              send(mappings[fk][:parent]).collection_audit_cascade(self)
+            end
+          end
+        end
+
+        def each_modification_tracking_audited_collection
+          audited_collections.each do |name, options|
+            if options[:track_modifications]
+              yield options
+            end
           end
         end
 
         def audited_collection_attributes
           attributes.slice *audited_relation_attribute_mappings.keys
+        end
+
+        def audited_collection_excluded_attribute_changes
+          changed_attributes.except *audited_relation_attribute_mappings.keys
         end
 
         def audited_collection_attribute_changes
@@ -128,7 +158,7 @@ module ActiveRecord
 
         def audited_relation_attribute_mappings
           audited_collections.inject({}) do |map, (name, options)|
-            map[options[:foreign_key]] = [name, options[:parent_type]]
+            map[options[:foreign_key]] = options
             map
           end
         end

@@ -69,6 +69,30 @@ describe 'Acts as audited collection plugin' do
     end
   end
 
+  it 'configures an audited collection for cascading when required' do
+    class Person < ActiveRecord::Base
+      belongs_to :parent
+
+      acts_as_audited_collection :parent => :parent, :cascade => true
+    end
+
+    Person.audited_collections.should have_key :people
+    Person.audited_collections[:people].should have_key :cascade
+    Person.audited_collections[:people][:cascade].should be_true
+  end
+
+  it 'configures an audited collection to track modificiations when required' do
+    class Person < ActiveRecord::Base
+      belongs_to :parent
+
+      acts_as_audited_collection :parent => :parent, :track_modifications => true
+    end
+
+    Person.audited_collections.should have_key :people
+    Person.audited_collections[:people].should have_key :track_modifications
+    Person.audited_collections[:people][:track_modifications].should be_true
+  end
+
   it 'audits an object creation when relationships are defined' do
     p = TestParent.create :name => 'test parent'
     c = nil
@@ -241,5 +265,39 @@ describe 'Acts as audited collection plugin' do
     lambda {
       p.test_children.create :name => 'another child'
     }.should change(CollectionAudit, :count).by(1)
+  end
+
+  it 'tracks modifications through an auditing collection with modification tracking enabled' do
+    p = TestParent.create :name => 'test parent'
+    c = p.other_test_children.create :name => 'test child'
+
+    lambda {
+      c.name = 'new name'
+      c.save!
+    }.should change(CollectionAudit, :count).by(1)
+
+    CollectionAudit.last.child_record.should == c
+    CollectionAudit.last.parent_record.should == p
+    CollectionAudit.last.action.should == 'modify'
+  end
+
+  it 'tracks grandchild modifications through a cascading auditing collection' do
+    p = TestParent.create :name => 'test parent'
+    # other_test_children has track_modifications enabled
+    c = p.other_test_children.create :name => 'test child'
+    g = nil
+    lambda {
+      g = c.test_grandchildren.create :name => 'test grandchild'
+    }.should change(CollectionAudit, :count).by(2)
+
+    audits = CollectionAudit.find :all, :order => 'id desc', :limit => 2
+    # First the grandchild would have been logged ..
+    audits[1].child_record.should == g
+    audits[1].parent_record.should == c
+    audits[1].action.should == 'add'
+    # .. then the child would have been logged.
+    audits[0].child_record.should == c
+    audits[0].parent_record.should == p
+    audits[0].action.should == 'modify'
   end
 end
