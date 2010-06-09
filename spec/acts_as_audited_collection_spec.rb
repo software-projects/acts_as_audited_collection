@@ -1,3 +1,5 @@
+# Released under the MIT license. See the LICENSE file for details
+
 require File.dirname(__FILE__) + '/spec_helper'
 
 describe 'Acts as audited collection plugin' do

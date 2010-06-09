@@ -1,3 +1,5 @@
+# Released under the MIT license. See the LICENSE file for details
+
 begin
   require File.dirname(__FILE__) + '/../../../../spec/spec_helper'
 rescue LoadError

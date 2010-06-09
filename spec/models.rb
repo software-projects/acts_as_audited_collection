@@ -1,3 +1,5 @@
+# Released under the MIT license. See the LICENSE file for details
+
 class TestParent < ActiveRecord::Base
   has_many :test_children
   has_many :other_test_children,

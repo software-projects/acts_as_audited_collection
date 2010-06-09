@@ -1,3 +1,5 @@
+# Released under the MIT license. See the LICENSE file for details
+
 ActiveRecord::Schema.define(:version => 0) do
   create_table :test_parents, :force => true do |t|
     t.string :name

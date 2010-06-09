@@ -1,3 +1,5 @@
+# Released under the MIT license. See the LICENSE file for details
+
 class AuditedCollectionMigrationGenerator < Rails::Generator::NamedBase
   def manifest
     record do |m|
