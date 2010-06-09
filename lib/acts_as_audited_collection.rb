@@ -38,7 +38,7 @@ module ActiveRecord
 
           # Try explicit first, then default
           options[:foreign_key] ||= parent_association.options[:foreign_key]
-          options[:foreign_key] ||= parent_association.association_foreign_key
+          options[:foreign_key] ||= parent_association.primary_key_name
 
           # TODO Remove this when polymorphic is supported.
           if parent_association.options[:polymorphic]

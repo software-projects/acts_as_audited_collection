@@ -137,12 +137,23 @@ describe 'Acts as audited collection plugin' do
 
   it 'correctly saves changes to a secondary collection' do
     p = TestParent.create :name => 'test_parent'
-    c = p.other_test_children.create :name => 'test child'
+    c = nil
+    lambda {
+      c = p.other_test_children.create :name => 'test child'
+    }.should change(CollectionAudit, :count).by(1)
 
     # Basic sanity checking, to make sure the model stays valid
     p.other_test_children.should include c
     p.test_children.should be_empty
     c.other_test_parent.should == p
     c.test_parent.should be_nil
+
+    p.test_children_audits.should be_empty
+    p.other_test_children_audits.length.should == 1
+
+    p.other_test_children_audits.last.child_record.should == c
+    p.other_test_children_audits.last.parent_record.should == p
+    p.other_test_children_audits.last.action.should == 'add'
+    p.other_test_children_audits.last.association.should == 'other_test_children'
   end
 end
