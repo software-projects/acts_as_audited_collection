@@ -14,8 +14,4 @@ load(File.join(plugin_spec_dir, "db", "schema.rb"))
 
 require File.join(File.dirname(__FILE__), '..', 'init.rb')
 
-class Parent < ActiveRecord::Base
-end
-
-class Child < ActiveRecord::Base
-end
+require 'models.rb'
