@@ -2,6 +2,9 @@ class TestParent < ActiveRecord::Base
   has_many :test_children
   has_many :other_test_children,
     :class_name => 'TestChild', :foreign_key => 'other_test_parent_id'
+
+  acts_as_audited_collection_parent :for => :test_children
+  acts_as_audited_collection_parent :for => :other_test_children
 end
 
 class TestChild < ActiveRecord::Base

@@ -12,7 +12,9 @@ module ActiveRecord
       module ClassMethods
         def acts_as_audited_collection(options = {})
           unless self.included_modules.include?(InstanceMethods)
+            # First time use in this class, we have some extra work to do.
             send :include, InstanceMethods 
+
             class_inheritable_reader :audited_collections
             write_inheritable_attribute :audited_collections, {}
 
@@ -29,8 +31,9 @@ module ActiveRecord
           }.merge(options)
 
           unless options.has_key? :parent
-            raise ActiveRecord::ConfigurationError.new "Must specify parent for an acts_as_audited_collection"
+            raise ActiveRecord::ConfigurationError.new "Must specify parent for an acts_as_audited_collection (:parent => :object)"
           end
+
           parent_association = reflect_on_association(options[:parent])
           unless parent_association && parent_association.belongs_to?
             raise ActiveRecord::ConfigurationError.new "Parent association '#{options[:parent]}' must be a belongs_to relationship"
@@ -47,19 +50,28 @@ module ActiveRecord
 
           options[:parent_type] ||= parent_association.klass.class_name
 
-          parent_association.klass.instance_eval do
-            has_many :"#{options[:name]}_audits", :as => :parent_record,
-                :class_name => 'CollectionAudit',
-                :conditions => ['association = ?', options[:name].to_s]
-          end
-          
           define_acts_as_audited_collection options do |config|
             config.merge! options
           end
         end
 
+        def acts_as_audited_collection_parent(options = {})
+          unless options.has_key? :for
+            raise ActiveRecord::ConfigurationError.new "Must specify relationship for an acts_as_audited_collection_parent (:for => :objects)"
+          end
+
+          child_association = reflect_on_association(options[:for])
+          if child_association.nil? || child_association.belongs_to?
+            raise ActiveRecord::ConfigurationError.new "Association '#{options[:for]}' must be a valid parent (i.e. not belongs_to) relationship"
+          end
+
+          has_many :"#{options[:for]}_audits", :as => :parent_record,
+              :class_name => 'CollectionAudit',
+              :conditions => ['association = ?', options[:for].to_s]
+        end
+
         def define_acts_as_audited_collection(options)
-          yield (read_inheritable_attribute(:audited_collections)[options[:name]] ||= {})
+          yield(read_inheritable_attribute(:audited_collections)[options[:name]] ||= {})
         end
       end
 
