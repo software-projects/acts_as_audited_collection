@@ -121,4 +121,28 @@ describe 'Acts as audited collection plugin' do
       c.destroy.should be_true
     }.should_not change(CollectionAudit, :count)
   end
+
+  it 'saves the collection name with the audit entry' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children.create :name => 'test child'
+    CollectionAudit.last.association.should == 'test_children'
+  end
+
+  it 'makes the collection history available through the parent class' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children.create :name => 'test child'
+
+    p.test_children_audits.should include CollectionAudit.last
+  end
+
+  it 'correctly saves changes to a secondary collection' do
+    p = TestParent.create :name => 'test_parent'
+    c = p.other_test_children.create :name => 'test child'
+
+    # Basic sanity checking, to make sure the model stays valid
+    p.other_test_children.should include c
+    p.test_children.should be_empty
+    c.other_test_parent.should == p
+    c.test_parent.should be_nil
+  end
 end

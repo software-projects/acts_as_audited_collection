@@ -7,6 +7,7 @@ ActiveRecord::Schema.define(:version => 0) do
   create_table :test_children, :force => true do |t|
     t.string :name
     t.references :test_parent
+    t.references :other_test_parent
     t.timestamps
   end
 
@@ -16,6 +17,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.references :user, :polymorphic => {}
     t.string :username
     t.string :action
+    t.string :association
     t.datetime :created_at
   end
 end

@@ -15,6 +15,13 @@ module ActiveRecord
             send :include, InstanceMethods 
             class_inheritable_reader :audited_collections
             write_inheritable_attribute :audited_collections, {}
+
+            after_create :collection_audit_create
+            before_update :collection_audit_update
+            after_destroy :collection_audit_destroy
+
+            has_many :child_collection_audits, :as => :child_record,
+              :class_name => 'CollectionAudit'
           end
 
           options = {
@@ -38,16 +45,13 @@ module ActiveRecord
             raise ActiveRecord::ConfigurationError.new "Sorry, acts_as_auditable_collection polymorphic associations haven't been added yet."
           end
 
-          # Explicit nil if the value wasn't specified, then try to determine the class
-          options[:parent_type] ||= nil
           options[:parent_type] ||= parent_association.klass.class_name
 
-          after_create :collection_audit_create
-          before_update :collection_audit_update
-          after_destroy :collection_audit_destroy
-
-          has_many :child_collection_audits, :as => :child_record,
-            :class_name => 'CollectionAudit'
+          parent_association.klass.instance_eval do
+            has_many :"#{options[:name]}_audits", :through => options[:name],
+                :source => :child_collection_audits,
+                :conditions => ['association = ?', options[:name].to_s]
+          end
           
           define_acts_as_audited_collection options do |config|
             config.merge! options
@@ -84,7 +88,8 @@ module ActiveRecord
           opts[:attributes].reject{|k,v| v.nil?}.each do |name, fk|
             child_collection_audits.create :parent_record_id => fk,
               :parent_record_type => mappings[name][1],
-              :action => opts[:action]
+              :action => opts[:action],
+              :association => mappings[name][0].to_s
           end
         end
 
