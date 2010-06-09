@@ -6,8 +6,11 @@ ActiveRecord::Schema.define(:version => 0) do
 
   create_table :test_children, :force => true do |t|
     t.string :name
+    t.string :description
     t.references :test_parent
     t.references :other_test_parent
+    t.references :test_parent_with_only
+    t.references :test_parent_with_except
     t.timestamps
   end
 

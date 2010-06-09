@@ -29,8 +29,13 @@ module ActiveRecord
           options = {
             :name => self.class_name.tableize.to_sym,
             :cascade => false,
-            :track_modifications => false
+            :track_modifications => false,
+            :only => nil,
+            :except => nil
           }.merge(options)
+
+          options[:only] &&= [options[:only]].collect(&:to_s).flatten
+          options[:except] &&= [options[:except]].collect(&:to_s).flatten
 
           unless options.has_key? :parent
             raise ActiveRecord::ConfigurationError.new "Must specify parent for an acts_as_audited_collection (:parent => :object)"
@@ -110,7 +115,7 @@ module ActiveRecord
 
         def collection_audit_write_as_modified
           each_modification_tracking_audited_collection do |col|
-            collection_audit_write :action => 'modify', :attributes => attributes.slice(col[:foreign_key])
+            collection_audit_write :action => 'modify', :attributes => attributes.slice(col[:foreign_key]) if audited_collection_should_care?(col)
           end
         end
 
@@ -154,6 +159,16 @@ module ActiveRecord
 
         def audited_collection_attribute_changes
           changed_attributes.slice *audited_relation_attribute_mappings.keys
+        end
+
+        def audited_collection_should_care?(collection)
+          if collection[:only]
+            !audited_collection_excluded_attribute_changes.slice(*collection[:only]).empty?
+          elsif collection[:except]
+            !audited_collection_excluded_attribute_changes.except(*collection[:except]).empty?
+          else
+            true
+          end
         end
 
         def audited_relation_attribute_mappings

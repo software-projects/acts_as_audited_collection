@@ -281,6 +281,54 @@ describe 'Acts as audited collection plugin' do
     CollectionAudit.last.action.should == 'modify'
   end
 
+  it 'tracks modifications to attributes listed in :only' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children_with_only.create :name => 'test child'
+
+    lambda {
+      c.name = 'new name'
+      c.save!
+    }.should change(CollectionAudit, :count).by(1)
+
+    CollectionAudit.last.child_record.should == c
+    CollectionAudit.last.parent_record.should == p
+    CollectionAudit.last.action.should == 'modify'
+  end
+
+  it 'ignores modifications to attributes not listed in :only' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children_with_only.create :name => 'test child'
+
+    lambda {
+      c.description = 'new description'
+      c.save!
+    }.should_not change(CollectionAudit, :count)
+  end
+
+  it 'ignores modifications to attributes listed in :except' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children_with_except.create :name => 'test child'
+
+    lambda {
+      c.name = 'new name'
+      c.save!
+    }.should_not change(CollectionAudit, :count)
+  end
+
+  it 'tracks modifications to attributes not listed in :except' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children_with_except.create :name => 'test child'
+
+    lambda {
+      c.description = 'new name'
+      c.save!
+    }.should change(CollectionAudit, :count).by(1)
+
+    CollectionAudit.last.child_record.should == c
+    CollectionAudit.last.parent_record.should == p
+    CollectionAudit.last.action.should == 'modify'
+  end
+
   it 'tracks grandchild modifications through a cascading auditing collection' do
     p = TestParent.create :name => 'test parent'
     # other_test_children has track_modifications enabled
