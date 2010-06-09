@@ -50,17 +50,70 @@ describe 'Acts as audited collection plugin' do
     }.should change(CollectionAudit, :count).by(1)
   end
 
-  it 'audits an object modification when a relation is altered' do
+  it 'skips auditing on object creation when no relationships are defined' do
+    lambda {
+      p = TestParent.create :name => 'test parent'
+      c = TestChild.create :name => 'test child'
+    }.should_not change(CollectionAudit, :count)
+  end
+
+  it 'audits an object modification when a relation is created' do
     c = TestChild.create :name => 'test child'
     p = TestParent.create :name => 'test parent'
 
     lambda {
       c.test_parent = p
-      c.save
+      c.save!
     }.should change(CollectionAudit, :count).by(1)
 
     CollectionAudit.last.child_record.should == c
     CollectionAudit.last.parent_record.should == p
     CollectionAudit.last.action.should == 'add'
+  end
+
+  it 'skips auditing on object modification when no relationships are altered' do
+    c = TestChild.create :name => 'test child'
+    p = TestParent.create :name => 'test parent'
+
+    lambda {
+      c.name = 'new name'
+      c.save!
+    }.should_not change(CollectionAudit, :count)
+  end
+
+  it 'audits an object modification when a relationship is removed' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children.create :name => 'test child'
+
+    lambda {
+      c.test_parent = nil
+      c.save!
+    }.should change(CollectionAudit, :count).by(1)
+
+    CollectionAudit.last.child_record.should == c
+    CollectionAudit.last.parent_record.should == p
+    CollectionAudit.last.action.should == 'remove'
+  end
+
+  it 'audits an object deletion when a relationship exists' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children.create :name => 'test child'
+
+    lambda {
+      c.destroy.should be_true
+    }.should change(CollectionAudit, :count).by(1)
+
+    # child_record will be nil, because the record has been deleted.
+    CollectionAudit.last.child_record_id.should == c.id
+    CollectionAudit.last.parent_record.should == p
+    CollectionAudit.last.action.should == 'remove'
+  end
+
+  it 'skips auditing an object deletion when no relationships exist' do
+    c = TestChild.create :name => 'test child'
+
+    lambda {
+      c.destroy.should be_true
+    }.should_not change(CollectionAudit, :count)
   end
 end
