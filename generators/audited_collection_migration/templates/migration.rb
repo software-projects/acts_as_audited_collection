@@ -4,9 +4,12 @@ class <%= class_name %> < ActiveRecord::Migration
       t.references :parent_record, :polymorphic => {}
       t.references :child_record, :polymorphic => {}
       t.references :user, :polymorphic => {}
-      t.string :username
       t.string :action
       t.datetime :created_at
+
+      t.index [:parent_record_id, :parent_record_type], :name => 'parent_record_index'
+      t.index [:child_record_id, :child_record_type], :name => 'child_record_index'
+      t.index [:user_id, :user_type], :name => 'user_index'
     end
   end
 
