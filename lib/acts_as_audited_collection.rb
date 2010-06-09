@@ -106,6 +106,7 @@ module ActiveRecord
 
         private
         def collection_audit_write(opts)
+          # Only care about explicit false here, not the falseness of nil
           return if Thread.current[:collection_audit_enabled] == false
 
           mappings = audited_relation_attribute_mappings
