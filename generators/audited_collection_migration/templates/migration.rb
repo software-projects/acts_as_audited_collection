@@ -15,6 +15,6 @@ class <%= class_name %> < ActiveRecord::Migration
   end
 
   def self.down
-    remove_table :collection_audits
+    drop_table :collection_audits
   end
 end
