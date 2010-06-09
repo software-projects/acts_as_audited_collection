@@ -48,8 +48,8 @@ module ActiveRecord
           options[:parent_type] ||= parent_association.klass.class_name
 
           parent_association.klass.instance_eval do
-            has_many :"#{options[:name]}_audits", :through => options[:name],
-                :source => :child_collection_audits,
+            has_many :"#{options[:name]}_audits", :as => :parent_record,
+                :class_name => 'CollectionAudit',
                 :conditions => ['association = ?', options[:name].to_s]
           end
           

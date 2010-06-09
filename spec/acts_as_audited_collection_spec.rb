@@ -135,8 +135,8 @@ describe 'Acts as audited collection plugin' do
     p.test_children_audits.should include CollectionAudit.last
   end
 
-  it 'correctly saves changes to a secondary collection' do
-    p = TestParent.create :name => 'test_parent'
+  it 'correctly audits a secondary collection' do
+    p = TestParent.create :name => 'test parent'
     c = nil
     lambda {
       c = p.other_test_children.create :name => 'test child'
@@ -155,5 +155,42 @@ describe 'Acts as audited collection plugin' do
     p.other_test_children_audits.last.parent_record.should == p
     p.other_test_children_audits.last.action.should == 'add'
     p.other_test_children_audits.last.association.should == 'other_test_children'
+  end
+
+  it 'correctly audits when a parent is reassociated through a secondary collection' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children.create :name => 'test child'
+    lambda {
+      c.test_parent = nil
+      c.other_test_parent = p
+      c.save!
+    }.should change(CollectionAudit, :count).by(2)
+
+    # One from the initial creation
+    p.test_children_audits.length.should == 2
+    p.test_children_audits.should be_all { |a| a.child_record == c }
+    p.test_children_audits.first.action.should == 'add'
+    p.test_children_audits.last.action.should == 'remove'
+    p.other_test_children_audits.length.should == 1
+    p.other_test_children_audits.should be_all { |a| a.child_record == c && a.action == 'add' }
+  end
+
+  it 'correctly audits when a child is assigned to a new parent' do
+    p1 = TestParent.create :name => 'test parent'
+    c = p1.test_children.create :name => 'test child'
+    p2 = TestParent.create :name => 'another parent'
+
+    lambda {
+      c.test_parent = p2
+      c.save!
+    }.should change(CollectionAudit, :count).by(2)
+
+    # One from the initial creation
+    p1.test_children_audits.length.should == 2
+    p1.test_children_audits.should be_all { |a| a.child_record == c }
+    p1.test_children_audits.first.action.should == 'add'
+    p1.test_children_audits.last.action.should == 'remove'
+    p2.test_children_audits.length.should == 1
+    p2.test_children_audits.should be_all { |a| a.child_record == c && a.action == 'add' }
   end
 end
