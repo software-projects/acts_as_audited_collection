@@ -45,7 +45,7 @@ module ActiveRecord
 
           # TODO Remove this when polymorphic is supported.
           if parent_association.options[:polymorphic]
-            raise ActiveRecord::ConfigurationError.new "Sorry, acts_as_auditable_collection polymorphic associations haven't been added yet."
+            raise ActiveRecord::ConfigurationError.new "Sorry, acts_as_audited_collection polymorphic associations haven't been added yet."
           end
 
           options[:parent_type] ||= parent_association.klass.class_name
