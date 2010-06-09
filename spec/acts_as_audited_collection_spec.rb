@@ -44,15 +44,20 @@ describe 'Acts as audited collection plugin' do
   end
 
   it 'audits an object creation when relationships are defined' do
+    p = TestParent.create :name => 'test parent'
+    c = nil
     lambda {
-      p = TestParent.create :name => 'test parent'
       c = p.test_children.create :name => 'test child'
     }.should change(CollectionAudit, :count).by(1)
+
+    CollectionAudit.last.child_record.should == c
+    CollectionAudit.last.parent_record.should == p
+    CollectionAudit.last.action.should == 'add'
   end
 
   it 'skips auditing on object creation when no relationships are defined' do
+    p = TestParent.create :name => 'test parent'
     lambda {
-      p = TestParent.create :name => 'test parent'
       c = TestChild.create :name => 'test child'
     }.should_not change(CollectionAudit, :count)
   end
