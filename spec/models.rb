@@ -45,5 +45,16 @@ end
 class TestGrandchild < ActiveRecord::Base
   belongs_to :test_child
 
-  acts_as_audited_collection :parent => :test_child, :cascade => true
+  has_many :test_great_grandchildren
+
+  acts_as_audited_collection :parent => :test_child, :cascade => true,
+      :track_modifications => true
+
+  acts_as_audited_collection_parent :for => :test_great_grandchildren
+end
+
+class TestGreatGrandchild < ActiveRecord::Base
+  belongs_to :test_grandchild
+
+  acts_as_audited_collection :parent => :test_grandchild, :cascade => true
 end

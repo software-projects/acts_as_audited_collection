@@ -350,4 +350,29 @@ describe 'Acts as audited collection plugin' do
     audits[0].parent_record.should == p
     audits[0].action.should == 'modify'
   end
+
+  it 'tracks great-grandchild modifications through a cascading auditing collection' do
+    p = TestParent.create :name => 'test parent'
+    c = p.other_test_children.create :name => 'test child'
+    g = c.test_grandchildren.create :name => 'test grandchild'
+    gg = nil
+
+    lambda {
+      gg = g.test_great_grandchildren.create :name => 'test great-grandchild'
+    }.should change(CollectionAudit, :count).by(3)
+
+    audits = CollectionAudit.find :all, :order => 'id desc', :limit => 3
+    # First the great-grandchild would have been logged ..
+    audits[2].child_record.should == gg
+    audits[2].parent_record.should == g
+    audits[2].action.should == 'add'
+    # .. then the grandchild would have been logged ..
+    audits[1].child_record.should == g
+    audits[1].parent_record.should == c
+    audits[1].action.should == 'modify'
+    # .. then the child would have been logged.
+    audits[0].child_record.should == c
+    audits[0].parent_record.should == p
+    audits[0].action.should == 'modify'
+  end
 end

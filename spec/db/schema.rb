@@ -22,6 +22,12 @@ ActiveRecord::Schema.define(:version => 0) do
     t.timestamps
   end
 
+  create_table :test_great_grandchildren, :force => true do |t|
+    t.string :name
+    t.references :test_grandchild
+    t.timestamps
+  end
+
   create_table :collection_audits, :force => true do |t|
     t.references :parent_record, :polymorphic => {}
     t.references :child_record, :polymorphic => {}
