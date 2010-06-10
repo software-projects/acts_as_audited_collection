@@ -55,7 +55,7 @@ module ActiveRecord
             raise ActiveRecord::ConfigurationError.new "Sorry, acts_as_audited_collection polymorphic associations haven't been added yet."
           end
 
-          options[:parent_type] ||= parent_association.klass.class_name
+          options[:parent_type] ||= parent_association.klass.name
 
           define_acts_as_audited_collection options do |config|
             config.merge! options
