@@ -1,3 +1,4 @@
 *.log
 *.sw[op]
 spec/db/*.db
+pkg/

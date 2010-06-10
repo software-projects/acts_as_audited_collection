@@ -23,6 +23,10 @@ spec = Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.has_rdoc = false
   s.extra_rdoc_files = ['README']
+  s.rubyforge_project = 'auditcollection'
+  s.description = <<EOF
+Adds auditing capabilities to ActiveRecord associations, in a similar fashion to acts_as_audited.
+EOF
 end
 
 desc 'Default: run specs.'
