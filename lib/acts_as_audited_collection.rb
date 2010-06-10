@@ -27,7 +27,7 @@ module ActiveRecord
           end
 
           options = {
-            :name => self.class_name.tableize.to_sym,
+            :name => self.name.tableize.to_sym,
             :cascade => false,
             :track_modifications => false,
             :only => nil,
