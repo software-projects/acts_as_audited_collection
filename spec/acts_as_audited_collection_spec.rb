@@ -351,6 +351,37 @@ describe 'Acts as audited collection plugin' do
     audits[0].action.should == 'modify'
   end
 
+  it 'tracks a grandchild being reassociated with a different child' do
+    p = TestParent.create :name => 'test parent'
+    # other_test_children has track_modifications enabled
+    c1 = p.other_test_children.create :name => 'test child'
+    c2 = p.other_test_children.create :name => 'another child'
+    g = c1.test_grandchildren.create :name => 'test grandchild'
+
+    lambda {
+      g.update_attributes :test_child => c2
+    }.should change(CollectionAudit, :count).by(4)
+
+    audits = CollectionAudit.find :all, :order => 'id desc', :limit => 4
+
+    # First the grandchild removal would have been logged ..
+    audits[3].child_record.should == g
+    audits[3].parent_record.should == c1
+    audits[3].action.should == 'remove'
+    # .. then the child 1 modification would have been logged ..
+    audits[2].child_record.should == c1
+    audits[2].parent_record.should == p
+    audits[2].action.should == 'modify'
+    # .. then the grandchild addition would have been logged ..
+    audits[1].child_record.should == g
+    audits[1].parent_record.should == c2
+    audits[1].action.should == 'add'
+    # .. then the child 2 modification would have been logged.
+    audits[0].child_record.should == c2
+    audits[0].parent_record.should == p
+    audits[0].action.should == 'modify'
+  end
+
   it 'tracks great-grandchild modifications through a cascading auditing collection' do
     p = TestParent.create :name => 'test parent'
     c = p.other_test_children.create :name => 'test child'

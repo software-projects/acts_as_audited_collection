@@ -136,7 +136,8 @@ module ActiveRecord
               :association => mappings[fk][:name].to_s
 
             if mappings[fk][:cascade]
-              send(mappings[fk][:parent]).collection_audit_cascade(self)
+              parent = mappings[fk][:parent_type].constantize.send :find, fk_val
+              parent.collection_audit_cascade(self)
             end
           end
         end
