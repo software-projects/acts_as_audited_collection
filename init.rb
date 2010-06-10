@@ -1,5 +1,3 @@
 # Released under the MIT license. See the LICENSE file for details
 
-require 'acts_as_audited_collection'
-
-ActiveRecord::Base.send :include, ActiveRecord::Acts::AuditedCollection
+require File.join(File.dirname(__FILE__), 'rails', 'init')
