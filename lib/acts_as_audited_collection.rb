@@ -34,8 +34,8 @@ module ActiveRecord
             :except => nil
           }.merge(options)
 
-          options[:only] &&= [options[:only]].collect(&:to_s).flatten
-          options[:except] &&= [options[:except]].collect(&:to_s).flatten
+          options[:only] &&= [options[:only]].flatten.collect(&:to_s)
+          options[:except] &&= [options[:except]].flatten.collect(&:to_s)
 
           unless options.has_key? :parent
             raise ActiveRecord::ConfigurationError.new "Must specify parent for an acts_as_audited_collection (:parent => :object)"
