@@ -19,9 +19,9 @@ describe 'Acts as audited collection plugin' do
 
   it 'infers the collection name correctly from the class' do
     class Person < ActiveRecord::Base
-      belongs_to :parent
+      belongs_to :test_parent
 
-      acts_as_audited_collection :parent => :parent
+      acts_as_audited_collection :parent => :test_parent
 
       audited_collections
     end.should have_key :people
@@ -29,9 +29,9 @@ describe 'Acts as audited collection plugin' do
 
   it 'allows the audited collection through a belongs_to relationship' do
     class Person < ActiveRecord::Base
-      belongs_to :parent
+      belongs_to :test_parent
 
-      acts_as_audited_collection :parent => :parent
+      acts_as_audited_collection :parent => :test_parent
     end
   end
 
@@ -73,9 +73,9 @@ describe 'Acts as audited collection plugin' do
 
   it 'configures an audited collection for cascading when required' do
     class Person < ActiveRecord::Base
-      belongs_to :parent
+      belongs_to :test_parent
 
-      acts_as_audited_collection :parent => :parent, :cascade => true
+      acts_as_audited_collection :parent => :test_parent, :cascade => true
     end
 
     Person.audited_collections.should have_key :people
@@ -85,9 +85,9 @@ describe 'Acts as audited collection plugin' do
 
   it 'configures an audited collection to track modificiations when required' do
     class Person < ActiveRecord::Base
-      belongs_to :parent
+      belongs_to :test_parent
 
-      acts_as_audited_collection :parent => :parent, :track_modifications => true
+      acts_as_audited_collection :parent => :test_parent, :track_modifications => true
     end
 
     Person.audited_collections.should have_key :people
