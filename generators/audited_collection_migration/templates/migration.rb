@@ -4,6 +4,7 @@ class <%= class_name %> < ActiveRecord::Migration
       t.references :parent_record, :polymorphic => {}
       t.references :child_record, :polymorphic => {}
       t.references :user, :polymorphic => {}
+      t.references :child_audit
       t.string :action
       t.string :association
       t.datetime :created_at

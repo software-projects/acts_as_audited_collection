@@ -406,4 +406,16 @@ describe 'Acts as audited collection plugin' do
     audits[0].parent_record.should == p
     audits[0].action.should == 'modify'
   end
+
+  it 'tracks the child audit of a cascading audit' do
+    p = TestParent.create :name => 'test parent'
+    # other_test_children has track_modifications enabled
+    c = p.other_test_children.create :name => 'test child'
+    g = c.test_grandchildren.create :name => 'test grandchild'
+
+    pa = p.other_test_children_audits.last
+    ca = c.test_grandchildren_audits.last
+    pa.child_audit.should == ca
+    ca.parent_audits.should == [pa]
+  end
 end

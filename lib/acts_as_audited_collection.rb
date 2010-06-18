@@ -113,14 +113,17 @@ module ActiveRecord
           collection_audit_write :action => 'remove', :attributes => audited_collection_attributes
         end
 
-        def collection_audit_write_as_modified
+        def collection_audit_write_as_modified(child_audit=nil)
           each_modification_tracking_audited_collection do |col|
-            collection_audit_write :action => 'modify', :attributes => attributes.slice(col[:foreign_key]) if audited_collection_should_care?(col)
+            collection_audit_write(:action => 'modify',
+                  :attributes => attributes.slice(col[:foreign_key]),
+                  :child_audit => child_audit
+            ) if audited_collection_should_care?(col)
           end
         end
 
-        def collection_audit_cascade(child)
-          collection_audit_write_as_modified if respond_to? :audited_collections
+        def collection_audit_cascade(child, child_audit)
+          collection_audit_write_as_modified(child_audit) if respond_to? :audited_collections
         end
 
         private
@@ -130,14 +133,15 @@ module ActiveRecord
 
           mappings = audited_relation_attribute_mappings
           opts[:attributes].reject{|k,v| v.nil?}.each do |fk, fk_val|
-            child_collection_audits.create :parent_record_id => fk_val,
+            audit = child_collection_audits.create :parent_record_id => fk_val,
               :parent_record_type => mappings[fk][:parent_type],
               :action => opts[:action],
-              :association => mappings[fk][:name].to_s
+              :association => mappings[fk][:name].to_s,
+              :child_audit => opts[:child_audit]
 
             if mappings[fk][:cascade]
               parent = mappings[fk][:parent_type].constantize.send :find, fk_val
-              parent.collection_audit_cascade(self)
+              parent.collection_audit_cascade(self, audit)
             end
           end
         end

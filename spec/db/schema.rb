@@ -32,6 +32,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.references :parent_record, :polymorphic => {}
     t.references :child_record, :polymorphic => {}
     t.references :user, :polymorphic => {}
+    t.references :child_audit
     t.string :action
     t.string :association
     t.datetime :created_at
