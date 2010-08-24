@@ -163,25 +163,27 @@ module ActiveRecord
 
           mappings = audited_relation_attribute_mappings
           opts[:attributes].reject{|k,v| v.nil?}.each do |fk, fk_val|
-            soft_delete_added = (collection_audit_was_soft_deleted?(mappings[fk]) &&
-                !collection_audit_is_soft_deleted?(mappings[fk]))
-            soft_delete_removed = (collection_audit_is_soft_deleted?(mappings[fk]) &&
-                !collection_audit_was_soft_deleted?(mappings[fk]))
+            object_being_deleted = collection_audit_is_soft_deleted?(mappings[fk]) &&
+                !collection_audit_was_soft_deleted?(mappings[fk])
+            object_being_restored = collection_audit_was_soft_deleted?(mappings[fk]) &&
+                !collection_audit_is_soft_deleted?(mappings[fk])
+            object_is_deleted = collection_audit_is_soft_deleted?(mappings[fk]) &&
+                collection_audit_was_soft_deleted?(mappings[fk])
 
-            # Block audit records on soft deleted objects.
-            unless (soft_delete_added and opts[:action] != 'add') or
-                (soft_delete_removed and opts[:action] != 'remove')
+            unless (object_being_deleted and opts[:action] != 'remove') or
+                (object_being_restored and opts[:action] != 'add') or
+                object_is_deleted
 
               audit = child_collection_audits.create :parent_record_id => fk_val,
                 :parent_record_type => mappings[fk][:parent_type],
                 :action => opts[:action],
                 :association => mappings[fk][:name].to_s,
                 :child_audit => opts[:child_audit]
-            end
 
-            if mappings[fk][:cascade]
-              parent = mappings[fk][:parent_type].constantize.send :find, fk_val
-              parent.collection_audit_cascade(self, audit)
+              if mappings[fk][:cascade]
+                parent = mappings[fk][:parent_type].constantize.send :find, fk_val
+                parent.collection_audit_cascade(self, audit)
+              end
             end
           end
         end

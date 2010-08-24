@@ -460,4 +460,24 @@ describe 'Acts as audited collection plugin' do
     CollectionAudit.last.parent_record.should == p
     CollectionAudit.last.child_record.should == c
   end
+
+  it 'cascades a soft delete upward as a normal delete' do
+    p = TestParent.create :name => 'test parent'
+    c = p.other_test_children.create :name => 'test child'
+    g = c.test_soft_delete_grandchildren.create :name => 'test grandchild'
+    lambda {
+      g.update_attributes! :deleted => true
+    }.should change(CollectionAudit, :count).by(2)
+
+    ca = CollectionAudit.last
+    ca.action.should == 'modify'
+    ca.child_record.should == c
+    ca.parent_record.should == p
+
+    ca = ca.child_audit
+    ca.should_not be_nil
+    ca.action.should == 'remove'
+    ca.child_record.should == g
+    ca.parent_record.should == c
+  end
 end
