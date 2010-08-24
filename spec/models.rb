@@ -8,11 +8,13 @@ class TestParent < ActiveRecord::Base
     :class_name => 'TestChild', :foreign_key => 'test_parent_with_only_id'
   has_many :test_children_with_except,
     :class_name => 'TestChild', :foreign_key => 'test_parent_with_except_id'
+  has_many :test_soft_delete_children
 
   acts_as_audited_collection_parent :for => :test_children
   acts_as_audited_collection_parent :for => :other_test_children
   acts_as_audited_collection_parent :for => :test_children_with_only
   acts_as_audited_collection_parent :for => :test_children_with_except
+  acts_as_audited_collection_parent :for => :test_soft_delete_children
 end
 
 class TestChild < ActiveRecord::Base
@@ -57,4 +59,10 @@ class TestGreatGrandchild < ActiveRecord::Base
   belongs_to :test_grandchild
 
   acts_as_audited_collection :parent => :test_grandchild, :cascade => true
+end
+
+class TestSoftDeleteChild < ActiveRecord::Base
+  belongs_to :test_parent
+
+  acts_as_audited_collection :parent => :test_parent, :soft_delete => {:deleted => 1}
 end

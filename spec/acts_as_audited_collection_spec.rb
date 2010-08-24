@@ -418,4 +418,46 @@ describe 'Acts as audited collection plugin' do
     pa.child_audit.should == ca
     ca.parent_audits.should == [pa]
   end
+
+  it 'reports a soft delete as if it were a delete' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_soft_delete_children.create :name => 'test child'
+    lambda {
+      c.update_attributes! :deleted => true
+    }.should change(CollectionAudit, :count).by(1)
+
+    CollectionAudit.last.action.should == 'remove'
+    CollectionAudit.last.parent_record.should == p
+    CollectionAudit.last.child_record.should == c
+  end
+
+  it 'ignores an object which is soft deleted when created' do
+    p = TestParent.create :name => 'test parent'
+    lambda {
+      c = p.test_soft_delete_children.create :name => 'test child',
+          :deleted => true
+    }.should_not change(CollectionAudit, :count)
+  end
+
+  it 'ignores a changed object which is soft deleted' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_soft_delete_children.create :name => 'test child',
+        :deleted => true
+    lambda {
+      c.update_attributes! :name => 'test child with new name'
+    }.should_not change(CollectionAudit, :count)
+  end
+
+  it 'reports a soft undelete as if it were an add' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_soft_delete_children.create :name => 'test child',
+        :deleted => true
+    lambda {
+      c.update_attributes! :deleted => false
+    }.should change(CollectionAudit, :count).by(1)
+
+    CollectionAudit.last.action.should == 'add'
+    CollectionAudit.last.parent_record.should == p
+    CollectionAudit.last.child_record.should == c
+  end
 end

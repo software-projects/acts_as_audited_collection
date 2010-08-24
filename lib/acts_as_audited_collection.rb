@@ -17,6 +17,7 @@ module ActiveRecord
 
             class_inheritable_reader :audited_collections
             write_inheritable_attribute :audited_collections, {}
+            attr_accessor :collection_audit_object_is_soft_deleted
 
             after_create :collection_audit_create
             before_update :collection_audit_update
@@ -31,7 +32,8 @@ module ActiveRecord
             :cascade => false,
             :track_modifications => false,
             :only => nil,
-            :except => nil
+            :except => nil,
+            :soft_delete => nil
           }.merge(options)
 
           options[:only] &&= [options[:only]].flatten.collect(&:to_s)
@@ -99,6 +101,18 @@ module ActiveRecord
         end
 
         def collection_audit_update
+          audited_collections.each do |name, opts|
+            attributes = {opts[:foreign_key] => self.send(opts[:foreign_key])}
+            if collection_audit_is_soft_deleted?(opts)
+              collection_audit_write(
+                  :action => 'remove',
+                  :attributes => attributes
+              ) unless collection_audit_was_soft_deleted?(opts)
+            elsif collection_audit_was_soft_deleted?(opts)
+              collection_audit_write :action => 'add', :attributes => attributes
+            end
+          end
+
           unless (old_values = audited_collection_attribute_changes).empty?
             new_values = old_values.inject({}) { |map, (k, v)| map[k] = self[k]; map }
 
@@ -127,17 +141,43 @@ module ActiveRecord
         end
 
         private
+        def collection_audit_is_soft_deleted?(opts)
+          if opts[:soft_delete]
+            opts[:soft_delete].all?{|k,v| self.send(k) == v}
+          else
+            false
+          end
+        end
+
+        def collection_audit_was_soft_deleted?(opts)
+          if opts[:soft_delete]
+            opts[:soft_delete].all?{|k,v| self.send(:"#{k}_was") == v}
+          else
+            false
+          end
+        end
+
         def collection_audit_write(opts)
           # Only care about explicit false here, not the falseness of nil
           return if Thread.current[:collection_audit_enabled] == false
 
           mappings = audited_relation_attribute_mappings
           opts[:attributes].reject{|k,v| v.nil?}.each do |fk, fk_val|
-            audit = child_collection_audits.create :parent_record_id => fk_val,
-              :parent_record_type => mappings[fk][:parent_type],
-              :action => opts[:action],
-              :association => mappings[fk][:name].to_s,
-              :child_audit => opts[:child_audit]
+            soft_delete_added = (collection_audit_was_soft_deleted?(mappings[fk]) &&
+                !collection_audit_is_soft_deleted?(mappings[fk]))
+            soft_delete_removed = (collection_audit_is_soft_deleted?(mappings[fk]) &&
+                !collection_audit_was_soft_deleted?(mappings[fk]))
+
+            # Block audit records on soft deleted objects.
+            unless (soft_delete_added and opts[:action] != 'add') or
+                (soft_delete_removed and opts[:action] != 'remove')
+
+              audit = child_collection_audits.create :parent_record_id => fk_val,
+                :parent_record_type => mappings[fk][:parent_type],
+                :action => opts[:action],
+                :association => mappings[fk][:name].to_s,
+                :child_audit => opts[:child_audit]
+            end
 
             if mappings[fk][:cascade]
               parent = mappings[fk][:parent_type].constantize.send :find, fk_val
