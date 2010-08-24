@@ -14,7 +14,7 @@ PKG_FILES = FileList[
 
 spec = Gem::Specification.new do |s|
   s.name = 'acts_as_audited_collection'
-  s.version = '0.2'
+  s.version = '0.3'
   s.author = 'Shaun Mangelsdorf'
   s.email = 's.mangelsdorf@gmail.com'
   s.homepage = 'http://smangelsdorf.github.com'
