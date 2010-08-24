@@ -28,10 +28,10 @@ ActiveRecord::Schema.define(:version => 0) do
     t.timestamps
   end
 
-  create_table :test_soft_delete_children, :force => true do |t|
+  create_table :test_soft_delete_grandchildren, :force => true do |t|
     t.string :name
     t.boolean :deleted
-    t.references :test_parent
+    t.references :test_child
     t.timestamps
   end
 

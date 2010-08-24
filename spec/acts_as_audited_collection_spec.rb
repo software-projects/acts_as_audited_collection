@@ -420,8 +420,8 @@ describe 'Acts as audited collection plugin' do
   end
 
   it 'reports a soft delete as if it were a delete' do
-    p = TestParent.create :name => 'test parent'
-    c = p.test_soft_delete_children.create :name => 'test child'
+    p = TestChild.create :name => 'test parent'
+    c = p.test_soft_delete_grandchildren.create :name => 'test child'
     lambda {
       c.update_attributes! :deleted => true
     }.should change(CollectionAudit, :count).by(1)
@@ -432,16 +432,16 @@ describe 'Acts as audited collection plugin' do
   end
 
   it 'ignores an object which is soft deleted when created' do
-    p = TestParent.create :name => 'test parent'
+    p = TestChild.create :name => 'test parent'
     lambda {
-      c = p.test_soft_delete_children.create :name => 'test child',
+      c = p.test_soft_delete_grandchildren.create :name => 'test child',
           :deleted => true
     }.should_not change(CollectionAudit, :count)
   end
 
   it 'ignores a changed object which is soft deleted' do
-    p = TestParent.create :name => 'test parent'
-    c = p.test_soft_delete_children.create :name => 'test child',
+    p = TestChild.create :name => 'test parent'
+    c = p.test_soft_delete_grandchildren.create :name => 'test child',
         :deleted => true
     lambda {
       c.update_attributes! :name => 'test child with new name'
@@ -449,8 +449,8 @@ describe 'Acts as audited collection plugin' do
   end
 
   it 'reports a soft undelete as if it were an add' do
-    p = TestParent.create :name => 'test parent'
-    c = p.test_soft_delete_children.create :name => 'test child',
+    p = TestChild.create :name => 'test parent'
+    c = p.test_soft_delete_grandchildren.create :name => 'test child',
         :deleted => true
     lambda {
       c.update_attributes! :deleted => false
