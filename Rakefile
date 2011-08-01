@@ -1,45 +1,42 @@
 require 'rake'
-require 'spec/rake/spectask'
+require 'rake/testtask'
+require 'rdoc/task'
 
-require 'rubygems'
-require 'rake/gempackagetask'
+desc 'Default: run unit tests.'
+task :default => :test
 
-PKG_FILES = FileList[
-  '[a-zA-Z]*',
-  'generators/**/*',
-  'lib/**/*',
-  'rails/**/*',
-  'spec/**/*'
-]
-
-spec = Gem::Specification.new do |s|
-  s.name = 'acts_as_audited_collection'
-  s.version = '0.3'
-  s.author = 'Shaun Mangelsdorf'
-  s.email = 's.mangelsdorf@gmail.com'
-  s.homepage = 'http://smangelsdorf.github.com'
-  s.platform = Gem::Platform::RUBY
-  s.summary = 'Extends ActiveRecord to allow auditing of associations'
-  s.files = PKG_FILES.to_a
-  s.require_path = 'lib'
-  s.has_rdoc = false
-  s.extra_rdoc_files = ['README.md']
-  s.rubyforge_project = 'auditcollection'
-  s.description = <<EOF
-Adds auditing capabilities to ActiveRecord associations, in a similar fashion to acts_as_audited.
-EOF
+desc 'Test the acts_as_audited_collection plugin.'
+Rake::TestTask.new(:test) do |t|
+  t.libs << 'lib'
+  t.libs << 'test'
+  t.pattern = 'test/**/*_test.rb'
+  t.verbose = true
 end
 
-desc 'Default: run specs.'
-task :default => :spec
-
-desc 'Run the specs'
-Spec::Rake::SpecTask.new(:spec) do |t|
-  t.spec_opts = ['--colour --format progress --loadby mtime --reverse']
-  t.spec_files = FileList['spec/**/*_spec.rb']
+desc 'Generate documentation for the acts_as_audited_collection plugin.'
+RDoc::Task.new(:rdoc) do |rdoc|
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title    = 'ActsAsAuditedCollection'
+  rdoc.options << '--line-numbers' << '--inline-source'
+  rdoc.rdoc_files.include('README')
+  rdoc.rdoc_files.include('lib/**/*.rb')
 end
 
-desc 'Turn this plugin into a gem.'
-Rake::GemPackageTask.new(spec) do |pkg|
-  pkg.gem_spec = spec
+begin
+  require 'jeweler'
+  Jeweler::Tasks.new do |gem|
+    gem.name = 'acts_as_audited_collection'
+    gem.summary = 'Adds auditing capabilities to ActiveRecord associations, in a similar fashion to acts_as_audited.'
+    gem.files = Dir[
+      '[a-zA-Z]*',
+      'generators/**/*',
+      'lib/**/*',
+      'rails/**/*',
+      'spec/**/*'
+    ]
+    gem.authors = ['Shaun Mangelsdorf']
+    gem.version = '0.4'
+  end
+rescue LoadError
+  puts "Jeweler could not be sourced"
 end
