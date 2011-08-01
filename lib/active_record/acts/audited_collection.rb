@@ -77,7 +77,7 @@ module ActiveRecord
 
         def without_collection_audit
           result = nil
-          Thread.current[:collection_audit_enabled] = returning(Thread.current[:collection_audit_enabled]) do
+          Thread.current[:collection_audit_enabled] = Thread.current[:collection_audit_enabled].tap do
             Thread.current[:collection_audit_enabled] = false
             result = yield if block_given?
           end

@@ -1,6 +1,7 @@
 require 'rake'
 require 'rake/testtask'
 require 'rdoc/task'
+require 'rspec/core/rake_task'
 
 desc 'Default: run unit tests.'
 task :default => :test
@@ -20,6 +21,11 @@ RDoc::Task.new(:rdoc) do |rdoc|
   rdoc.options << '--line-numbers' << '--inline-source'
   rdoc.rdoc_files.include('README')
   rdoc.rdoc_files.include('lib/**/*.rb')
+end
+
+RSpec::Core::RakeTask.new do |t|
+  t.rspec_opts = ["-c", "-f progress", "-r ./spec/spec_helper.rb"]
+  t.pattern = 'spec/*_spec.rb'
 end
 
 begin
