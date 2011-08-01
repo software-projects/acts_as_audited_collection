@@ -32,7 +32,8 @@ begin
   require 'jeweler'
   Jeweler::Tasks.new do |gem|
     gem.name = 'acts_as_audited_collection'
-    gem.summary = 'Adds auditing capabilities to ActiveRecord associations, in a similar fashion to acts_as_audited.'
+    gem.summary = 'Extends ActiveRecord to allow auditing of associations'
+    gem.description = 'Adds auditing capabilities to ActiveRecord associations, in a similar fashion to acts_as_audited.'
     gem.files = Dir[
       '[a-zA-Z]*',
       'generators/**/*',
@@ -41,7 +42,7 @@ begin
       'spec/**/*'
     ]
     gem.authors = ['Shaun Mangelsdorf']
-    gem.version = '0.4'
+    gem.version = '0.4.1'
   end
 rescue LoadError
   puts "Jeweler could not be sourced"
