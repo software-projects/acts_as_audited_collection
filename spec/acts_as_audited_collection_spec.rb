@@ -25,7 +25,7 @@ describe 'Acts as audited collection plugin' do
       acts_as_audited_collection :parent => :test_parent
 
       audited_collections
-    end.should have_key :people
+    end.should have_key "TestParent#people"
   end
 
   it 'allows the audited collection through a belongs_to relationship' do
@@ -79,9 +79,9 @@ describe 'Acts as audited collection plugin' do
       acts_as_audited_collection :parent => :test_parent, :cascade => true
     end
 
-    Person.audited_collections.should have_key :people
-    Person.audited_collections[:people].should have_key :cascade
-    Person.audited_collections[:people][:cascade].should be_true
+    Person.audited_collections.should have_key 'TestParent#people'
+    Person.audited_collections['TestParent#people'].should have_key :cascade
+    Person.audited_collections['TestParent#people'][:cascade].should be_true
   end
 
   it 'configures an audited collection to track modificiations when required' do
@@ -91,9 +91,9 @@ describe 'Acts as audited collection plugin' do
       acts_as_audited_collection :parent => :test_parent, :track_modifications => true
     end
 
-    Person.audited_collections.should have_key :people
-    Person.audited_collections[:people].should have_key :track_modifications
-    Person.audited_collections[:people][:track_modifications].should be_true
+    Person.audited_collections.should have_key 'TestParent#people'
+    Person.audited_collections['TestParent#people'].should have_key :track_modifications
+    Person.audited_collections['TestParent#people'][:track_modifications].should be_true
   end
 
   it 'audits an object creation when relationships are defined' do
@@ -165,6 +165,23 @@ describe 'Acts as audited collection plugin' do
     CollectionAudit.last.child_record_id.should == c.id
     CollectionAudit.last.parent_record.should == p
     CollectionAudit.last.action.should == 'remove'
+  end
+
+  it 'audits an object creation when two parent relationships exist with the same collection name' do
+    p = TestParent.create :name => 'test parent'
+    f = TestFakeParent.create :name => 'test fake parent'
+
+    c = nil
+    lambda {
+      c = TestChild.create :name => 'test child', :test_fake_parent => f, :test_parent => p
+    }.should change(CollectionAudit, :count).by(2)
+
+    p.test_children_audits.last.child_record_id.should == c.id
+    p.test_children_audits.last.parent_record.should == p
+    p.test_children_audits.last.child_record_id.should == c.id
+    f.test_children_audits.last.child_record_id.should == c.id
+    f.test_children_audits.last.parent_record.should == f
+    f.test_children_audits.last.child_record_id.should == c.id
   end
 
   it 'skips auditing an object deletion when no relationships exist' do
@@ -526,5 +543,14 @@ describe 'Acts as audited collection plugin' do
 
     p.test_children_audits.for_child(c).last.should be_current
     p.test_children_audits.for_child(c2).last.should be_current
+  end
+
+  it 'tracks the current audit record correctly through different parent objects' do
+    p = TestParent.create :name => 'test parent'
+    f = TestFakeParent.create :name => 'test fake parent'
+    c = TestChild.create :name => 'test child', :test_fake_parent => f, :test_parent => p
+
+    p.test_children_audits.last.should be_current
+    f.test_children_audits.last.should be_current
   end
 end

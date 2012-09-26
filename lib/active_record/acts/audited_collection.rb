@@ -72,7 +72,8 @@ module ActiveRecord
         end
 
         def define_acts_as_audited_collection(options)
-          yield(read_inheritable_attribute(:audited_collections)[options[:name]] ||= {})
+          key = "#{options[:parent_type]}##{options[:name]}"
+          yield(read_inheritable_attribute(:audited_collections)[key] ||= {})
         end
 
         def without_collection_audit
@@ -93,7 +94,7 @@ module ActiveRecord
         end
 
         def collection_audit_update
-          audited_collections.each do |name, opts|
+          audited_collections.each do |key, opts|
             attributes = {opts[:foreign_key] => self.send(opts[:foreign_key])}
             if collection_audit_is_soft_deleted?(opts)
               collection_audit_write(

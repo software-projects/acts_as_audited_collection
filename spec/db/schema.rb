@@ -6,10 +6,16 @@ ActiveRecord::Schema.define(:version => 0) do
     t.timestamps
   end
 
+  create_table :test_fake_parents, :force => true do |t|
+    t.string :name
+    t.timestamps
+  end
+
   create_table :test_children, :force => true do |t|
     t.string :name
     t.string :description
     t.references :test_parent
+    t.references :test_fake_parent
     t.references :other_test_parent
     t.references :test_parent_with_only
     t.references :test_parent_with_except

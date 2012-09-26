@@ -15,8 +15,15 @@ class TestParent < ActiveRecord::Base
   acts_as_audited_collection_parent :for => :test_children_with_except
 end
 
+class TestFakeParent < ActiveRecord::Base
+  has_many :test_children
+
+  acts_as_audited_collection_parent :for => :test_children
+end
+
 class TestChild < ActiveRecord::Base
   belongs_to :test_parent
+  belongs_to :test_fake_parent
   belongs_to :other_test_parent,
     :class_name => 'TestParent'
   belongs_to :test_parent_with_only,
@@ -28,6 +35,7 @@ class TestChild < ActiveRecord::Base
   has_many :test_soft_delete_grandchildren
 
   acts_as_audited_collection :parent => :test_parent
+  acts_as_audited_collection :parent => :test_fake_parent
   acts_as_audited_collection :parent => :other_test_parent,
       :name => :other_test_children,
       :track_modifications => true
