@@ -15,6 +15,6 @@ class AuditedCollectionUpgradeGenerator < Rails::Generators::NamedBase
 
   def main_screen_turn_on
     self.from_version = from.split '.'
-    migration_template 'migration.rb', "db/migrate"
+    migration_template 'migration.rb', "db/migrate/#{file_name}"
   end
 end
