@@ -1,6 +1,6 @@
 class <%= class_name %> < ActiveRecord::Migration
   def self.up
-<% if from_version < [1,0,0] %>
+<% if (from_version <=> [1,0,0]) < 0 %>
     add_column :collection_audits, :current, :boolean, :default => true, :nullable => false
     add_index :collection_audits, :current
 
@@ -19,7 +19,7 @@ class <%= class_name %> < ActiveRecord::Migration
   end
 
   def self.down
-<% if from_version < [1,0,0] %>
+<% if (from_version <=> [1,0,0]) < 0 %>
     remove_index :collection_audits, :current
     remove_column :collection_audits, :current
 <% end %>
