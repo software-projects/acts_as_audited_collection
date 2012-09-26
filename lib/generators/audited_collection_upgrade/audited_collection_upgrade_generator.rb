@@ -1,6 +1,6 @@
 # Released under the MIT license. See the LICENSE file for details
 
-class AuditedCollectionMigrationGenerator < Rails::Generators::NamedBase
+class AuditedCollectionUpgradeGenerator < Rails::Generators::NamedBase
   include Rails::Generators::Migration
   attr_reader :from_version
 
