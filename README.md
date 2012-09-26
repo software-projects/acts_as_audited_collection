@@ -37,6 +37,14 @@ Generating the migration
     script/generate audited_collection_migration add_collection_audits_table
     rake db:migrate
 
+Upgrading
+---------
+
+Specify the version you're upgrading *from* as a parameter.
+
+    rails generate audited_collect_migration upgrade_collection_audits_table 0.4.0
+    rake db:migrate
+
 Usage
 =====
 
