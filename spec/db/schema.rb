@@ -42,6 +42,7 @@ ActiveRecord::Schema.define(:version => 0) do
     t.references :child_audit
     t.string :action
     t.string :association
+    t.boolean :current
     t.datetime :created_at
   end
 end

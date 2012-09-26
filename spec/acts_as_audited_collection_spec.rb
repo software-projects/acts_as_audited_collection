@@ -481,4 +481,50 @@ describe 'Acts as audited collection plugin' do
     ca.child_record.should == g
     ca.parent_record.should == c
   end
+
+  it 'assigns a new audit record as the current record' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children.create :name => 'test child'
+    p.test_children_audits.last.should be_current
+  end
+
+  it 'unassigns the previous current record when a new current record is created' do
+    p = TestParent.create :name => 'test parent'
+    c = p.other_test_children.create :name => 'test child'
+    previous = p.other_test_children_audits.last
+    lambda {
+      c.update_attributes! :name => 'updated child'
+    }.should change(CollectionAudit, :count).by(1)
+    previous.reload.should_not be_current
+    p.other_test_children_audits.last.should be_current
+  end
+
+  it 'tracks the current audit record uniquely per association' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children.create :name => 'test child'
+    c.test_parent_with_only = p
+    c.save
+
+    p.test_children_audits.last.should be_current
+    p.test_children_with_only_audits.last.should be_current
+  end
+
+  it 'tracks the current audit record correctly per hierarchy' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children.create :name => 'test child'
+    p2 = TestParent.create :name => 'test parent 2'
+    c2 = p2.test_children.create :name => 'test child 2'
+
+    p.test_children_audits.last.should be_current
+    p2.test_children_audits.last.should be_current
+  end
+
+  it 'tracks the current audit record correctly per child object' do
+    p = TestParent.create :name => 'test parent'
+    c = p.test_children.create :name => 'test child'
+    c2 = p.test_children.create :name => 'test child 2'
+
+    p.test_children_audits.for_child(c).last.should be_current
+    p.test_children_audits.for_child(c2).last.should be_current
+  end
 end
