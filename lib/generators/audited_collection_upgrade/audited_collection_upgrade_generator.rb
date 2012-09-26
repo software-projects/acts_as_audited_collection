@@ -9,6 +9,8 @@ class AuditedCollectionUpgradeGenerator < Rails::Generators::NamedBase
   extend ActiveRecord::Generators::Migration
   attr_accessor :from_version
 
+  source_root File.join(File.dirname(__FILE__), 'templates')
+
   argument :from, :type => :string, :default => '', :banner => 'VERSION'
 
   def main_screen_turn_on
