@@ -2,7 +2,7 @@
 
 class AuditedCollectionUpgradeGenerator < Rails::Generators::NamedBase
   include Rails::Generators::Migration
-  attr_reader :from_version
+  attr_accessor :from_version
 
   argument :from, :type => :string, :default => '', :banner => 'VERSION'
 
