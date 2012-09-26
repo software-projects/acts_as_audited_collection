@@ -14,7 +14,7 @@ class AuditedCollectionUpgradeGenerator < Rails::Generators::NamedBase
   argument :from, :type => :string, :default => '', :banner => 'VERSION'
 
   def main_screen_turn_on
-    self.from_version = from.split '.'
+    self.from_version = from.split('.').collect(&:to_i)
     migration_template 'migration.rb', "db/migrate/#{file_name}"
   end
 end
