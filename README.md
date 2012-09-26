@@ -1,7 +1,7 @@
-acts_as_audited_collection
+acts\_as\_audited\_collection
 ==========================
 
-acts_as_audited_collection is a Rails plugin, which extends ActiveRecord to allow auditing of associations.
+acts\_as\_audited\_collection is a Rails plugin, which extends ActiveRecord to allow auditing of associations.
 
 The basic feature set is:
 
@@ -19,7 +19,17 @@ This plugin is released under the MIT license, and was contributed to the Rails 
 Installation
 ============
 
-TBD
+Add this line to your application's Gemfile:
+
+    gem 'acts_as_audited_collection'
+
+And then execute:
+
+    $ bundle
+
+Or install it yourself as:
+
+    $ gem install acts_as_audited_collection
 
 Generating the migration
 ------------------------
@@ -94,7 +104,7 @@ Consider the following alternative "Person" model.
           :track_modifications => true
     end
 
-With this, we can now see modifications from the parent (though we make no attempt to ascertain what the modifications were - if you need this, see [acts_as_audited](http://github.com/collectiveidea/acts_as_audited))
+With this, we can now see modifications from the parent (though we make no attempt to ascertain what the modifications were - if you need this, see [acts_as_audited](http://github.com/collectiveidea/audited))
 
     p = Person.first                                  # Person name: 'Fred'
     p.update_attributes :name => 'Freda'              # Audit record is created
@@ -142,3 +152,12 @@ Temporarily disabling auditing
     end
 
 Keep in mind that this disables collection auditing completely in the current thread, not just for the `Person` model.
+
+Contributing
+============
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Added some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request

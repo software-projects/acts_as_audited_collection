@@ -1,3 +1,6 @@
+#!/usr/bin/env rake
+require "bundler/gem_tasks"
+
 require 'rake'
 require 'rake/testtask'
 require 'rdoc/task'
@@ -26,24 +29,4 @@ end
 RSpec::Core::RakeTask.new do |t|
   t.rspec_opts = ["-c", "-f progress", "-r ./spec/spec_helper.rb"]
   t.pattern = 'spec/*_spec.rb'
-end
-
-begin
-  require 'jeweler'
-  Jeweler::Tasks.new do |gem|
-    gem.name = 'acts_as_audited_collection'
-    gem.summary = 'Extends ActiveRecord to allow auditing of associations'
-    gem.description = 'Adds auditing capabilities to ActiveRecord associations, in a similar fashion to acts_as_audited.'
-    gem.files = Dir[
-      '[a-zA-Z]*',
-      'generators/**/*',
-      'lib/**/*',
-      'rails/**/*',
-      'spec/**/*'
-    ]
-    gem.authors = ['Shaun Mangelsdorf']
-    gem.version = '0.4.1'
-  end
-rescue LoadError
-  puts "Jeweler could not be sourced"
 end
