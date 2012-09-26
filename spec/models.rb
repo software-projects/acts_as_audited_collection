@@ -64,6 +64,6 @@ end
 class TestSoftDeleteGrandchild < ActiveRecord::Base
   belongs_to :test_child
 
-  acts_as_audited_collection :parent => :test_child, :soft_delete => {:deleted => 1},
+  acts_as_audited_collection :parent => :test_child, :soft_delete => {:deleted => true},
       :cascade => true, :track_modifications => true
 end
