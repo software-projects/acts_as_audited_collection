@@ -1,6 +1,7 @@
 # Released under the MIT license. See the LICENSE file for details
 
 require File.dirname(__FILE__) + '/spec_helper'
+require 'acts_as_audited_collection'
 
 describe 'Acts as audited collection plugin' do
   it 'can be included in an ActiveRecord model' do

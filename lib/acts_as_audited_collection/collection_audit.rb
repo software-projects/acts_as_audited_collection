@@ -1,4 +1,5 @@
 # Released under the MIT license. See the LICENSE file for details
+require 'active_record'
 
 class CollectionAudit < ActiveRecord::Base
   belongs_to :parent_record, :polymorphic => true

@@ -14,4 +14,10 @@ Gem::Specification.new do |gem|
   gem.name          = "acts_as_audited_collection"
   gem.require_paths = ["lib"]
   gem.version       = ActsAsAuditedCollection::VERSION
+
+  gem.add_development_dependency 'ruby-debug'
+  gem.add_development_dependency 'rake'
+  gem.add_development_dependency 'rspec'
+  gem.add_development_dependency 'rails', '~>3.0'
+  gem.add_development_dependency 'sqlite3'
 end
