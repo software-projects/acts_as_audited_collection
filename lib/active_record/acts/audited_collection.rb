@@ -7,13 +7,13 @@ module ActiveRecord
             # First time use in this class, we have some extra work to do.
             send :include, InstanceMethods 
 
-            class_inheritable_reader :audited_collections
-            write_inheritable_attribute :audited_collections, {}
+            class_attribute :audited_collections
+            send :audited_collections=, {}
             attr_accessor :collection_audit_object_is_soft_deleted
 
             after_create :collection_audit_create
             before_update :collection_audit_update
-            after_destroy :collection_audit_destroy
+            before_destroy :collection_audit_destroy
 
             has_many :child_collection_audits, :as => :child_record,
               :class_name => 'CollectionAudit'
@@ -42,7 +42,7 @@ module ActiveRecord
 
           # Try explicit first, then default
           options[:foreign_key] ||= parent_association.options[:foreign_key]
-          options[:foreign_key] ||= parent_association.primary_key_name
+          options[:foreign_key] ||= parent_association.foreign_key
 
           # TODO Remove this when polymorphic is supported.
           if parent_association.options[:polymorphic]
@@ -68,12 +68,12 @@ module ActiveRecord
 
           has_many :"#{options[:for]}_audits", :as => :parent_record,
               :class_name => 'CollectionAudit',
-              :conditions => ['association = ?', options[:for].to_s]
+              :conditions => ['audited_association = ?', options[:for].to_s]
         end
 
         def define_acts_as_audited_collection(options)
           key = "#{options[:parent_type]}##{options[:name]}"
-          yield(read_inheritable_attribute(:audited_collections)[key] ||= {})
+          yield(audited_collections[key] ||= {})
         end
 
         def without_collection_audit
@@ -167,11 +167,12 @@ module ActiveRecord
                 (object_being_restored and opts[:action] != 'add') or
                 object_is_deleted
 
-              audit = child_collection_audits.create :parent_record_id => fk_val,
+              audit = child_collection_audits.create({:parent_record_id => fk_val,
                 :parent_record_type => mappings[fk][:parent_type],
+                :audited_association => mappings[fk][:name].to_s,
                 :action => opts[:action],
-                :association => mappings[fk][:name].to_s,
-                :child_audit => opts[:child_audit]
+                :child_audit => opts[:child_audit]},
+                :without_protection => true)
 
               if mappings[fk][:cascade]
                 parent = mappings[fk][:parent_type].constantize.send :find, fk_val

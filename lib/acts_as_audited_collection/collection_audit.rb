@@ -20,7 +20,7 @@ class CollectionAudit < ActiveRecord::Base
       :parent_record_id => parent_record_id,
       :child_record_type => child_record_type,
       :child_record_id => child_record_id,
-      :association => association,
+      :audited_association => audited_association,
       :current => true
     ).update_all :current => false
     self.current = true

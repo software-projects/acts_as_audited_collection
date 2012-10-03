@@ -16,9 +16,17 @@ class <%= class_name %> < ActiveRecord::Migration
       set ca_old.current = false
     }
 <% end %>
+
+<% if (from_version <=> [1,0,2]) < 0 %>
+    rename_column :collection_audits, :association, :audited_association
+<% end %>
   end
 
   def self.down
+<% if (from_version <=> [1,0,2]) < 0 %>
+    rename_column :collection_audits, :audited_association, :association
+<% end %>
+
 <% if (from_version <=> [1,0,0]) < 0 %>
     remove_index :collection_audits, :current
     remove_column :collection_audits, :current

@@ -195,7 +195,7 @@ describe 'Acts as audited collection plugin' do
   it 'saves the collection name with the audit entry' do
     p = TestParent.create :name => 'test parent'
     c = p.test_children.create :name => 'test child'
-    CollectionAudit.last.association.should == 'test_children'
+    CollectionAudit.last.audited_association.should == 'test_children'
   end
 
   it 'makes the collection history available through the parent class' do
@@ -224,7 +224,7 @@ describe 'Acts as audited collection plugin' do
     p.other_test_children_audits.last.child_record.should == c
     p.other_test_children_audits.last.parent_record.should == p
     p.other_test_children_audits.last.action.should == 'add'
-    p.other_test_children_audits.last.association.should == 'other_test_children'
+    p.other_test_children_audits.last.audited_association.should == 'other_test_children'
   end
 
   it 'correctly audits when a parent is reassociated through a secondary collection' do
