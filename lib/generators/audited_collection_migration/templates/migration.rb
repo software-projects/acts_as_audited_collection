@@ -6,7 +6,8 @@ class <%= class_name %> < ActiveRecord::Migration
       t.references :user, :polymorphic => {}
       t.references :child_audit
       t.string :action
-      t.string :association
+      t.string :audited_association
+      t.boolean :current
       t.datetime :created_at
 
       t.index [:parent_record_id, :parent_record_type], :name => 'parent_record_index'
